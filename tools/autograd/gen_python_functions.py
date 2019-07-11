@@ -35,6 +35,7 @@ SKIP_PYTHON_BINDINGS = [
     'nonzero(_(out|numpy))?',
     'set_quantizer_',
     'set_data',
+    's_native_addmm_'
 ]
 
 # These function signatures are not exposed to Python. Note that this signature
@@ -49,6 +50,7 @@ SKIP_PYTHON_BINDINGS_SIGNATURES = [
 PY_VARIABLE_METHOD_VARARGS = CodeTemplate("""\
 static PyObject * ${pycname}(PyObject* self_, PyObject* args, PyObject* kwargs)
 {
+  ${deprecation_message}
   HANDLE_TH_ERRORS
   static PythonArgParser parser({
     ${signatures}
@@ -66,6 +68,7 @@ static PyObject * ${pycname}(PyObject* self_, PyObject* args, PyObject* kwargs)
 PY_VARIABLE_METHOD_NOARGS = CodeTemplate("""\
 static PyObject * ${pycname}(PyObject* self_, PyObject* args)
 {
+  ${deprecation_message}
   HANDLE_TH_ERRORS
   ${declare_namedtuple_return_types}
   ${unpack_self}
@@ -691,6 +694,7 @@ def create_python_bindings(python_functions, has_self, is_module=False):
             'unpack_self': [],
             'dispatch': [],
             'declare_namedtuple_return_types': '',
+            'deprecation_message': '',
         }
 
         if has_self:
@@ -720,6 +724,13 @@ def create_python_bindings(python_functions, has_self, is_module=False):
         env['dispatch'].append('}')
 
         env['traceable'] = 'true' if all(should_trace(d) for d in declarations) else 'false'
+
+        # In-place operator, should be method only. Deprecate it.
+        if not is_module and not has_self and name.endswith('_') and not name.startswith('_'):
+            env['deprecation_message'] = ('PyErr_WarnEx(PyExc_DeprecationWarning, '
+                                          '"In-place functions such as torch.{name} are deprecated. '
+                                          'Use their in-place method counterparts (Tensor.{name}) instead.", 1);'
+                                          ).format(name=name)
 
         if len(declarations) == 1 and len(declarations[0]['args']) == 1 and has_self:
             tmpl = PY_VARIABLE_METHOD_NOARGS

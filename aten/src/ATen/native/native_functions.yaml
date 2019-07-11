@@ -83,18 +83,22 @@
 - func: dropout(Tensor input, float p, bool train) -> Tensor
 
 - func: dropout_(Tensor(a!) self, float p, bool train) -> Tensor(a!)
+  variant: function, method
 
 - func: feature_dropout(Tensor input, float p, bool train) -> Tensor
 
 - func: feature_dropout_(Tensor(a!) self, float p, bool train) -> Tensor(a!)
+  variant: function, method
 
 - func: alpha_dropout(Tensor input, float p, bool train) -> Tensor
 
 - func: alpha_dropout_(Tensor(a!) self, float p, bool train) -> Tensor(a!)
+  variant: function, method
 
 - func: feature_alpha_dropout(Tensor input, float p, bool train) -> Tensor
 
 - func: feature_alpha_dropout_(Tensor(a!) self, float p, bool train) -> Tensor(a!)
+  variant: function, method
 
 - func: abs(Tensor self) -> Tensor
   variants: function, method
@@ -2403,6 +2407,7 @@
     CUDA: s_addmm_sparse_dense_cuda
 
 - func: s_native_addmm_(Tensor(a!) self, Tensor mat1, Tensor mat2, *, Scalar beta=1, Scalar alpha=1) -> Tensor(a!)
+  variants: function, method
   dispatch:
     CPU: s_addmm_sparse_dense_cpu_
     CUDA: s_addmm_sparse_dense_cuda_
@@ -2705,7 +2710,7 @@
   requires_tensor: True
 
 - func: copy_sparse_to_sparse_(Tensor(a!) self, Tensor src, bool non_blocking=False) -> Tensor(a!)
-  variants: function
+  variants: function, method
   dispatch:
     SparseCPU: copy_sparse_
     SparseCUDA: copy_sparse_
